@@ -20,15 +20,3 @@
 - **Deployment:** Vercel  
 
 ---
-
-## ⚡ Getting Started
-
-### Prerequisites
-- Node.js (v16 or later)  
-- npm or yarn  
-
-### Installation
-Clone the repository:
-```bash
-git clone https://github.com/yourusername/WorldWatch.git
-cd WorldWatch-main
