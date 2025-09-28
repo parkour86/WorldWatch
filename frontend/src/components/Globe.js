@@ -106,7 +106,7 @@ function Globe() {
       if (showEarthquakes) {
         eq.forEach((e) => {
           const m = new THREE.Mesh(
-            new THREE.SphereGeometry(0.08, 8, 8),
+            new THREE.SphereGeometry(0.04, 8, 8),
             new THREE.MeshBasicMaterial({ color: 0xff0000 })
           );
           m.position.copy(latLonToVec3(e.lat, e.lon, 5.1));
@@ -121,7 +121,7 @@ function Globe() {
       if (showTornadoes) {
         torns.forEach((t) => {
           const m = new THREE.Mesh(
-            new THREE.SphereGeometry(0.07, 8, 8),
+            new THREE.SphereGeometry(0.04, 8, 8),
             new THREE.MeshBasicMaterial({ color: 0x0000ff })
           );
           m.position.copy(latLonToVec3(t.lat, t.lon, 5.15));
@@ -136,7 +136,7 @@ function Globe() {
       if (showHurricanes) {
         hurs.forEach((h) => {
           const m = new THREE.Mesh(
-            new THREE.SphereGeometry(0.1, 8, 8),
+            new THREE.SphereGeometry(0.04, 8, 8),
             new THREE.MeshBasicMaterial({ color: 0x00ff00 })
           );
           m.position.copy(latLonToVec3(h.lat, h.lon, 5.25));
@@ -151,7 +151,7 @@ function Globe() {
       if (showPlanes) {
         pls.forEach((p) => {
           const m = new THREE.Mesh(
-            new THREE.SphereGeometry(0.06, 8, 8),
+            new THREE.SphereGeometry(0.04, 8, 8),
             new THREE.MeshBasicMaterial({ color: 0xffff80 })
           );
           m.position.copy(latLonToVec3(p.lat, p.lon, 5.3));
@@ -167,7 +167,7 @@ function Globe() {
       if (showWildfires) {
         trimmed.forEach((f) => {
           const m = new THREE.Mesh(
-            new THREE.SphereGeometry(0.09, 8, 8),
+            new THREE.SphereGeometry(0.04, 8, 8),
             new THREE.MeshBasicMaterial({ color: 0xffa500 })
           );
           m.position.copy(latLonToVec3(f.lat, f.lon, 5.2));
