@@ -9,7 +9,6 @@ import { fetchHurricanes } from "../utils/fetchHurricanes";
 import { fetchPlanes } from "../utils/fetchPlanes";
 
 function Globe() {
-  const uniqueHurricaneTitles = new Set(hurricanes.map((h) => h.title)).size;
   const mountRef = useRef(null);
   const [earthquakes, setEarthquakes] = useState([]);
   const [tornadoes, setTornadoes] = useState([]);
@@ -218,7 +217,6 @@ function Globe() {
           <div>Earthquakes: {earthquakes.length}</div>
           <div>Strongest EQ: {strongestEQ}</div>
           <div>Tornadoes: {tornadoes.length}</div>
-          <div>Hurricanse: {uniqueHurricaneTitles}</div>
           <div>Wildfires: {wildfires.length}</div>
           <div>Planes: {planes.length}</div>
         </div>
