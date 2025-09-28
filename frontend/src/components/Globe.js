@@ -16,6 +16,7 @@ function Globe() {
   const [hurricanes, setHurricanes] = useState([]);
   const [planes, setPlanes] = useState([]);
 
+  const uniqueHurricanes = new Set(hurricanes.map((h) => h.title)).size;
   const [showEarthquakes, setShowEarthquakes] = useState(true);
   const [showTornadoes, setShowTornadoes] = useState(true);
   const [showWildfires, setShowWildfires] = useState(true);
@@ -217,6 +218,7 @@ function Globe() {
           <div>Earthquakes: {earthquakes.length}</div>
           <div>Strongest EQ: {strongestEQ}</div>
           <div>Tornadoes: {tornadoes.length}</div>
+          <div>Hurricanes: {uniqueHurricanes}</div>
           <div>Wildfires: {wildfires.length}</div>
           <div>Planes: {planes.length}</div>
         </div>
