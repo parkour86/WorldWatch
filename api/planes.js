@@ -1,12 +1,15 @@
 const axios = require("axios");
 
-module.exports = async (req, res) => {
+let cachedData = [];
+
+// Function to fetch and cache data
+async function refreshPlanes() {
   try {
     const response = await axios.get(
       "https://opensky-network.org/api/states/all",
     );
     const states = response.data.states || [];
-    const planes = states
+    cachedData = states
       .filter((s) => s[5] !== null && s[6] !== null)
       .slice(0, 75)
       .map((s) => ({
@@ -15,13 +18,20 @@ module.exports = async (req, res) => {
         lon: s[5],
         altitude: s[13],
       }));
-    res.json(planes);
+    console.log("Plane data refreshed");
   } catch (err) {
     console.error("Error fetching planes", {
       message: err.message,
       code: err.code,
       response: err.response && err.response.data,
     });
-    res.status(500).json({ error: "Failed to fetch planes" });
   }
+}
+
+// Refresh every 5 minutes
+refreshPlanes();
+setInterval(refreshPlanes, 5 * 60 * 1000);
+
+module.exports = (req, res) => {
+  res.json(cachedData);
 };
