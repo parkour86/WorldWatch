@@ -1,20 +1,31 @@
 const axios = require("axios");
 
-module.exports = async (req, res) => {
+let cachedData = [];
+
+// Function to fetch and cache data
+async function refreshHurricanes() {
   try {
     const url =
       "https://eonet.gsfc.nasa.gov/api/v3/events?category=severeStorms";
     const { data } = await axios.get(url);
 
-    const result = data.events.flatMap((event) =>
+    cachedData = data.events.flatMap((event) =>
       event.geometry.map((geo) => ({
         lat: geo.coordinates[1],
         lon: geo.coordinates[0],
         title: event.title,
       })),
     );
-    res.json(result);
+    console.log("Hurricane data refreshed");
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch hurricanes" });
+    console.error("Failed to refresh hurricane data", err.message);
   }
+}
+
+// Refresh every 5 minutes
+refreshHurricanes();
+setInterval(refreshHurricanes, 5 * 60 * 1000);
+
+module.exports = (req, res) => {
+  res.json(cachedData);
 };
