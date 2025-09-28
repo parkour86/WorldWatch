@@ -217,7 +217,6 @@ function Globe() {
           <div>Earthquakes: {earthquakes.length}</div>
           <div>Strongest EQ: {strongestEQ}</div>
           <div>Tornadoes: {tornadoes.length}</div>
-          <div>Hurricanes: {hurricanes.length}</div>
           <div>Wildfires: {wildfires.length}</div>
           <div>Planes: {planes.length}</div>
         </div>
