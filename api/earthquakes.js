@@ -1,10 +1,10 @@
-import { put, get } from "@vercel/blob";
-import axios from "axios";
+const { put, get } = require("@vercel/blob");
+const axios = require("axios");
 
 const BLOB_KEY = "earthquakes/data.json";
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   let cached = await get(BLOB_KEY);
   let data, lastModified;
 
@@ -33,4 +33,4 @@ export default async function handler(req, res) {
     contentType: "application/json",
   });
   return res.json(earthquakes);
-}
+};
