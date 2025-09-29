@@ -1,33 +1,39 @@
+const { put } = require("@vercel/blob");
 const axios = require("axios");
 
-let cachedData = [];
+const BLOB_KEY = "API_Data/wildfires.json";
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-// Function to fetch and cache data
-async function refreshWildfires() {
-  try {
-    const url = "https://eonet.gsfc.nasa.gov/api/v3/events?category=wildfires";
-    const { data } = await axios.get(url);
+let blobUrl = null;
+let lastModified = null;
 
-    cachedData = data.events
-      .flatMap((event) =>
-        event.geometry.map((geo) => ({
-          lat: geo.coordinates[1],
-          lon: geo.coordinates[0],
-          title: event.title,
-        })),
-      )
-      .slice(50, 210);
+module.exports = async (req, res) => {
+  const now = Date.now();
 
-    console.log("Wildfire data refreshed");
-  } catch (err) {
-    console.error("Failed to refresh wildfire data", err.message);
+  // Serve cached data if fresh
+  if (blobUrl && lastModified && now - lastModified < CACHE_TTL) {
+    const response = await axios.get(blobUrl);
+    return res.json(response.data);
   }
-}
 
-// Refresh every 5 minutes
-refreshWildfires();
-setInterval(refreshWildfires, 5 * 60 * 1000);
+  // Fetch wildfires data
+  const url = "https://eonet.gsfc.nasa.gov/api/v3/events?category=wildfires";
+  const { data } = await axios.get(url);
+  const wildfires = data.events.flatMap((event) =>
+    event.geometry.map((geo) => ({
+      lat: geo.coordinates[1],
+      lon: geo.coordinates[0],
+      title: event.title,
+    })),
+  );
 
-module.exports = (req, res) => {
-  res.json(cachedData);
+  // Upload to Vercel Blob and update cache pointers
+  const { url: uploadedUrl } = await put(BLOB_KEY, JSON.stringify(wildfires), {
+    access: "public",
+    contentType: "application/json",
+  });
+  blobUrl = uploadedUrl;
+  lastModified = now;
+
+  return res.json(wildfires);
 };

@@ -1,7 +1,7 @@
 const { put } = require("@vercel/blob");
 const axios = require("axios");
 
-const BLOB_KEY = "earthquakes/data.json";
+const BLOB_KEY = "API_Data/earthquakes.json";
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Store the blob URL in memory (for demonstration; use a DB or env for persistence)

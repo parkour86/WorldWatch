@@ -1,31 +1,37 @@
+const { put } = require("@vercel/blob");
 const axios = require("axios");
 
-let cachedData = [];
+const BLOB_KEY = "API_Data/hurricanes.json";
+const CACHE_TTL = 5 * 60 * 1000;
 
-// Function to fetch and cache data
-async function refreshHurricanes() {
-  try {
-    const url =
-      "https://eonet.gsfc.nasa.gov/api/v3/events?category=severeStorms";
-    const { data } = await axios.get(url);
+let blobUrl = null;
+let lastModified = null;
 
-    cachedData = data.events.flatMap((event) =>
-      event.geometry.map((geo) => ({
-        lat: geo.coordinates[1],
-        lon: geo.coordinates[0],
-        title: event.title,
-      })),
-    );
-    console.log("Hurricane data refreshed");
-  } catch (err) {
-    console.error("Failed to refresh hurricane data", err.message);
+module.exports = async (req, res) => {
+  const now = Date.now();
+
+  if (blobUrl && lastModified && now - lastModified < CACHE_TTL) {
+    const response = await axios.get(blobUrl);
+    return res.json(response.data);
   }
-}
 
-// Refresh every 5 minutes
-refreshHurricanes();
-setInterval(refreshHurricanes, 5 * 60 * 1000);
+  // Fetch hurricanes data
+  const url = "https://eonet.gsfc.nasa.gov/api/v3/events?category=severeStorms";
+  const { data } = await axios.get(url);
+  const hurricanes = data.events.flatMap((event) =>
+    event.geometry.map((geo) => ({
+      lat: geo.coordinates[1],
+      lon: geo.coordinates[0],
+      title: event.title,
+    })),
+  );
 
-module.exports = (req, res) => {
-  res.json(cachedData);
+  const { url: uploadedUrl } = await put(BLOB_KEY, JSON.stringify(hurricanes), {
+    access: "public",
+    contentType: "application/json",
+  });
+  blobUrl = uploadedUrl;
+  lastModified = now;
+
+  return res.json(hurricanes);
 };

@@ -1,55 +1,58 @@
+const { put } = require("@vercel/blob");
 const axios = require("axios");
 const { parse } = require("csv-parse/sync");
 
-let cachedData = [];
+const BLOB_KEY = "API_Data/tornadoes.json";
+const CACHE_TTL = 5 * 60 * 1000;
 
-// Function to fetch and cache data
-async function refreshTornadoes() {
-  try {
-    const today = new Date();
-    const urls = [];
+let blobUrl = null;
+let lastModified = null;
 
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      const url = `https://www.spc.noaa.gov/climo/reports/${y}${m}${day}_rpts_torn.csv`;
-      urls.push(url);
-    }
+module.exports = async (req, res) => {
+  const now = Date.now();
 
-    let allRecords = [];
-
-    for (const url of urls) {
-      try {
-        const { data } = await axios.get(url);
-        const records = parse(data, { columns: true, skip_empty_lines: true });
-
-        const cleaned = records.map((r) => ({
-          lat: parseFloat(r.LAT),
-          lon: parseFloat(r.LON),
-          location: r.LOCATION || "Unknown",
-          time: r.TIME || "N/A",
-        }));
-
-        allRecords = allRecords.concat(cleaned);
-      } catch (err) {
-        // Ignore missing data for a day
-      }
-    }
-
-    cachedData = allRecords;
-    console.log("Tornado data refreshed");
-  } catch (err) {
-    console.error("Failed to refresh tornado data", err.message);
+  if (blobUrl && lastModified && now - lastModified < CACHE_TTL) {
+    const response = await axios.get(blobUrl);
+    return res.json(response.data);
   }
-}
 
-// Refresh every 5 minutes
-refreshTornadoes();
-setInterval(refreshTornadoes, 5 * 60 * 1000);
+  // Fetch tornadoes data
+  const today = new Date();
+  const urls = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    urls.push(
+      `https://www.spc.noaa.gov/climo/reports/${y}${m}${day}_rpts_torn.csv`,
+    );
+  }
 
-module.exports = (req, res) => {
-  res.json(cachedData);
+  let allRecords = [];
+  for (const url of urls) {
+    try {
+      const { data } = await axios.get(url);
+      const records = parse(data, { columns: true, skip_empty_lines: true });
+      const cleaned = records.map((r) => ({
+        lat: parseFloat(r.LAT),
+        lon: parseFloat(r.LON),
+        location: r.LOCATION || "Unknown",
+        time: r.TIME || "N/A",
+      }));
+      allRecords = allRecords.concat(cleaned);
+    } catch (err) {
+      // Ignore missing data for a day
+    }
+  }
+
+  const { url: uploadedUrl } = await put(BLOB_KEY, JSON.stringify(allRecords), {
+    access: "public",
+    contentType: "application/json",
+  });
+  blobUrl = uploadedUrl;
+  lastModified = now;
+
+  return res.json(allRecords);
 };
