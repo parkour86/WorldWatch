@@ -11,28 +11,49 @@ module.exports = async (req, res) => {
   const now = Date.now();
 
   if (blobUrl && lastModified && now - lastModified < CACHE_TTL) {
-    const response = await axios.get(blobUrl);
-    return res.json(response.data);
+    try {
+      const response = await axios.get(blobUrl);
+      return res.json(response.data);
+    } catch (err) {
+      // If blob fetch fails, continue to try API
+    }
   }
 
-  // Fetch hurricanes data
-  const url = "https://eonet.gsfc.nasa.gov/api/v3/events?category=severeStorms";
-  const { data } = await axios.get(url);
-  const hurricanes = data.events.flatMap((event) =>
-    event.geometry.map((geo) => ({
-      lat: geo.coordinates[1],
-      lon: geo.coordinates[0],
-      title: event.title,
-    })),
-  );
+  try {
+    // Fetch hurricanes data
+    const url =
+      "https://eonet.gsfc.nasa.gov/api/v3/events?category=severeStorms";
+    const { data } = await axios.get(url);
+    const hurricanes = data.events.flatMap((event) =>
+      event.geometry.map((geo) => ({
+        lat: geo.coordinates[1],
+        lon: geo.coordinates[0],
+        title: event.title,
+      })),
+    );
 
-  const { url: uploadedUrl } = await put(BLOB_KEY, JSON.stringify(hurricanes), {
-    access: "public",
-    contentType: "application/json",
-    allowOverwrite: true,
-  });
-  blobUrl = uploadedUrl;
-  lastModified = now;
+    const { url: uploadedUrl } = await put(
+      BLOB_KEY,
+      JSON.stringify(hurricanes),
+      {
+        access: "public",
+        contentType: "application/json",
+        allowOverwrite: true,
+      },
+    );
+    blobUrl = uploadedUrl;
+    lastModified = now;
 
-  return res.json(hurricanes);
+    return res.json(hurricanes);
+  } catch (err) {
+    if (blobUrl) {
+      try {
+        const response = await axios.get(blobUrl);
+        return res.json(response.data);
+      } catch (blobErr) {
+        // Blob fetch also failed
+      }
+    }
+    return res.status(500).json({ error: "Failed to fetch hurricane data" });
+  }
 };
