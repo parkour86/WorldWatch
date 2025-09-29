@@ -42,11 +42,11 @@ function Globe() {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 12;
+    camera.position.z = 20;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
-    mountRef.current.innerHTML = ""; 
+    mountRef.current.innerHTML = "";
     mountRef.current.appendChild(renderer.domElement);
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.6));
@@ -57,7 +57,7 @@ function Globe() {
     const earthTex = new THREE.TextureLoader().load("/earth_texture.jpg");
     const globe = new THREE.Mesh(
       new THREE.SphereGeometry(5, 64, 64),
-      new THREE.MeshPhongMaterial({ map: earthTex })
+      new THREE.MeshPhongMaterial({ map: earthTex }),
     );
     scene.add(globe);
 
@@ -107,10 +107,15 @@ function Globe() {
         eq.forEach((e) => {
           const m = new THREE.Mesh(
             new THREE.SphereGeometry(0.04, 8, 8),
-            new THREE.MeshBasicMaterial({ color: 0xff0000 })
+            new THREE.MeshBasicMaterial({ color: 0xff0000 }),
           );
           m.position.copy(latLonToVec3(e.lat, e.lon, 5.1));
-          m.userData = { type: "Earthquake", magnitude: e.mag, lat: e.lat, lon: e.lon };
+          m.userData = {
+            type: "Earthquake",
+            magnitude: e.mag,
+            lat: e.lat,
+            lon: e.lon,
+          };
           eqGroup.add(m);
         });
       }
@@ -122,7 +127,7 @@ function Globe() {
         torns.forEach((t) => {
           const m = new THREE.Mesh(
             new THREE.SphereGeometry(0.04, 8, 8),
-            new THREE.MeshBasicMaterial({ color: 0x0000ff })
+            new THREE.MeshBasicMaterial({ color: 0x0000ff }),
           );
           m.position.copy(latLonToVec3(t.lat, t.lon, 5.15));
           m.userData = { type: "Tornado", lat: t.lat, lon: t.lon };
@@ -137,10 +142,15 @@ function Globe() {
         hurs.forEach((h) => {
           const m = new THREE.Mesh(
             new THREE.SphereGeometry(0.04, 8, 8),
-            new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+            new THREE.MeshBasicMaterial({ color: 0x00ff00 }),
           );
           m.position.copy(latLonToVec3(h.lat, h.lon, 5.25));
-          m.userData = { type: "Hurricane", title: h.title, lat: h.lat, lon: h.lon };
+          m.userData = {
+            type: "Hurricane",
+            title: h.title,
+            lat: h.lat,
+            lon: h.lon,
+          };
           hGroup.add(m);
         });
       }
@@ -152,10 +162,14 @@ function Globe() {
         pls.forEach((p) => {
           const m = new THREE.Mesh(
             new THREE.SphereGeometry(0.04, 8, 8),
-            new THREE.MeshBasicMaterial({ color: 0xffff80 })
+            new THREE.MeshBasicMaterial({ color: 0xffff80 }),
           );
           m.position.copy(latLonToVec3(p.lat, p.lon, 5.3));
-          m.userData = { type: "Plane", callsign: p.callsign, altitude: p.altitude };
+          m.userData = {
+            type: "Plane",
+            callsign: p.callsign,
+            altitude: p.altitude,
+          };
           pGroup.add(m);
         });
       }
@@ -168,10 +182,15 @@ function Globe() {
         trimmed.forEach((f) => {
           const m = new THREE.Mesh(
             new THREE.SphereGeometry(0.04, 8, 8),
-            new THREE.MeshBasicMaterial({ color: 0xffa500 })
+            new THREE.MeshBasicMaterial({ color: 0xffa500 }),
           );
           m.position.copy(latLonToVec3(f.lat, f.lon, 5.2));
-          m.userData = { type: "Wildfire", title: f.title || "Unknown", lat: f.lat, lon: f.lon };
+          m.userData = {
+            type: "Wildfire",
+            title: f.title || "Unknown",
+            lat: f.lat,
+            lon: f.lon,
+          };
           wGroup.add(m);
         });
       }
@@ -189,56 +208,190 @@ function Globe() {
         mountRef.current.removeChild(renderer.domElement);
       }
     };
-  }, [showEarthquakes, showTornadoes, showWildfires, showHurricanes, showPlanes]);
+  }, [
+    showEarthquakes,
+    showTornadoes,
+    showWildfires,
+    showHurricanes,
+    showPlanes,
+  ]);
 
   const strongestEQ = earthquakes.length
     ? Math.max(...earthquakes.map((e) => e.mag))
     : 0;
 
-  return <>
-    <div style={{width:'100%',height:'100vh',position:'relative'}}>
-      <div ref={mountRef} style={{width:'100%',height:'100%'}}/>
-      <div style={{position:'absolute',top:20,left:20,fontSize:36,fontWeight:'bold',color:'white'}}>WorldWatch+</div>
-      <div style={{position:'absolute',top:80,right:20,background:'rgba(220,220,220,0.85)',padding:10,borderRadius:8,fontSize:20}}>
-        <strong>Filters</strong>
-        <div><label><input type='checkbox' checked={showEarthquakes} onChange={function(){setShowEarthquakes(!showEarthquakes)}}/> Earthquakes</label></div>
-        <div><label><input type='checkbox' checked={showTornadoes} onChange={function(){setShowTornadoes(!showTornadoes)}}/> Tornadoes</label></div>
-        <div><label><input type='checkbox' checked={showHurricanes} onChange={function(){setShowHurricanes(!showHurricanes)}}/> Hurricanes</label></div>
-        <div><label><input type='checkbox' checked={showWildfires} onChange={function(){setShowWildfires(!showWildfires)}}/> Wildfires</label></div>
-        <div><label><input type='checkbox' checked={showPlanes} onChange={function(){setShowPlanes(!showPlanes)}}/> Planes</label></div>
-
-        <div style={{marginTop:10}}><strong>Legend</strong></div>
-        <div><span style={{color:'#ff0000'}}>●</span> Earthquakes</div>
-        <div><span style={{color:'#0000ff'}}>●</span> Tornado</div>
-        <div><span style={{color:'#00ff00'}}>●</span> Hurricane</div>
-        <div><span style={{color:'#ffa500'}}>●</span> Wildfire</div>
-        <div><span style={{color:'#ffff80'}}>●</span> Plane</div>
-
-        <div style={{marginTop:10}}><strong>Data Summary</strong>
-          <div>Earthquakes: {earthquakes.length}</div>
-          <div>Strongest EQ: {strongestEQ}</div>
-          <div>Tornadoes: {tornadoes.length}</div>
-          <div>Hurricanes: {uniqueHurricanes}</div>
-          <div>Wildfires: {wildfires.length}</div>
-          <div>Planes: {planes.length}</div>
+  return (
+    <>
+      <div style={{ width: "100%", height: "100vh", position: "relative" }}>
+        <div ref={mountRef} style={{ width: "100%", height: "100%" }} />
+        <div
+          style={{
+            position: "absolute",
+            top: 20,
+            left: 20,
+            fontSize: 36,
+            fontWeight: "bold",
+            color: "white",
+          }}
+        >
+          WorldWatch+
         </div>
+        <div
+          style={{
+            position: "absolute",
+            top: 80,
+            right: 20,
+            background: "rgba(220,220,220,0.85)",
+            padding: 10,
+            borderRadius: 8,
+            fontSize: 20,
+          }}
+        >
+          <strong>Filters</strong>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                checked={showEarthquakes}
+                onChange={function () {
+                  setShowEarthquakes(!showEarthquakes);
+                }}
+              />{" "}
+              Earthquakes
+            </label>
+          </div>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                checked={showTornadoes}
+                onChange={function () {
+                  setShowTornadoes(!showTornadoes);
+                }}
+              />{" "}
+              Tornadoes
+            </label>
+          </div>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                checked={showHurricanes}
+                onChange={function () {
+                  setShowHurricanes(!showHurricanes);
+                }}
+              />{" "}
+              Hurricanes
+            </label>
+          </div>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                checked={showWildfires}
+                onChange={function () {
+                  setShowWildfires(!showWildfires);
+                }}
+              />{" "}
+              Wildfires
+            </label>
+          </div>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                checked={showPlanes}
+                onChange={function () {
+                  setShowPlanes(!showPlanes);
+                }}
+              />{" "}
+              Planes
+            </label>
+          </div>
+
+          <div style={{ marginTop: 10 }}>
+            <strong>Legend</strong>
+          </div>
+          <div>
+            <span style={{ color: "#ff0000" }}>●</span> Earthquakes
+          </div>
+          <div>
+            <span style={{ color: "#0000ff" }}>●</span> Tornado
+          </div>
+          <div>
+            <span style={{ color: "#00ff00" }}>●</span> Hurricane
+          </div>
+          <div>
+            <span style={{ color: "#ffa500" }}>●</span> Wildfire
+          </div>
+          <div>
+            <span style={{ color: "#ffff80" }}>●</span> Plane
+          </div>
+
+          <div style={{ marginTop: 10 }}>
+            <strong>Data Summary</strong>
+            <div>Earthquakes: {earthquakes.length}</div>
+            <div>Strongest EQ: {strongestEQ}</div>
+            <div>Tornadoes: {tornadoes.length}</div>
+            <div>Hurricanes: {uniqueHurricanes}</div>
+            <div>Wildfires: {wildfires.length}</div>
+            <div>Planes: {planes.length}</div>
+          </div>
+        </div>
+
+        {selectedInfo && (
+          <div
+            style={{
+              position: "absolute",
+              fontSize: 22,
+              bottom: 60,
+              left: 20,
+              background: "rgba(0,0,0,0.6)",
+              padding: 8,
+              borderRadius: 6,
+              color: "white",
+            }}
+          >
+            <strong>{selectedInfo.type}</strong>
+            {selectedInfo.lat && <div>Lat: {selectedInfo.lat}</div>}
+            {selectedInfo.lon && <div>Lon: {selectedInfo.lon}</div>}
+            {selectedInfo.magnitude && (
+              <div>Magnitude: {selectedInfo.magnitude}</div>
+            )}
+            {selectedInfo.title && <div>{selectedInfo.title}</div>}
+            {selectedInfo.callsign && (
+              <div>Call Sign: {selectedInfo.callsign}</div>
+            )}
+            {selectedInfo.altitude && (
+              <div>Altitude: {selectedInfo.altitude}</div>
+            )}
+          </div>
+        )}
       </div>
 
-      {selectedInfo && <div style={{position:'absolute',fontSize:22,bottom:60,left:20,background:'rgba(0,0,0,0.6)',padding:8,borderRadius:6,color:'white'}}>
-        <strong>{selectedInfo.type}</strong>
-        {selectedInfo.lat && <div>Lat: {selectedInfo.lat}</div>}
-        {selectedInfo.lon && <div>Lon: {selectedInfo.lon}</div>}
-        {selectedInfo.magnitude && <div>Magnitude: {selectedInfo.magnitude}</div>}
-        {selectedInfo.title && <div>{selectedInfo.title}</div>}
-        {selectedInfo.callsign && <div>Call Sign: {selectedInfo.callsign}</div>}
-        {selectedInfo.altitude && <div>Altitude: {selectedInfo.altitude}</div>}
-      </div>}
-    </div>
-
-      <div style={{position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', color: 'white', fontSize: 18, textAlign: 'center'}}>
-        Made by Sebastian Booth | <a href="https://github.com/bidahs" target="_blank" rel="noopener noreferrer" style={{color:'white', textDecoration:'underline'}}>GitHub</a>
+      <div
+        style={{
+          position: "absolute",
+          bottom: 10,
+          left: "50%",
+          transform: "translateX(-50%)",
+          color: "white",
+          fontSize: 18,
+          textAlign: "center",
+        }}
+      >
+        Made by Sebastian Booth |{" "}
+        <a
+          href="https://github.com/bidahs"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: "white", textDecoration: "underline" }}
+        >
+          GitHub
+        </a>
       </div>
-  </>
+    </>
+  );
 }
 
 export default Globe;
