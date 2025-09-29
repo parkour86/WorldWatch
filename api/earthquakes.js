@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
     BLOB_KEY,
     JSON.stringify(earthquakes),
     {
-      access: "private",
+      access: "public",
       contentType: "application/json",
     },
   );
