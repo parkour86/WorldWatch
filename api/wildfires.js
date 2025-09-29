@@ -31,6 +31,7 @@ module.exports = async (req, res) => {
   const { url: uploadedUrl } = await put(BLOB_KEY, JSON.stringify(wildfires), {
     access: "public",
     contentType: "application/json",
+    allowOverwrite: true,
   });
   blobUrl = uploadedUrl;
   lastModified = now;

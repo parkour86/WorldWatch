@@ -50,6 +50,7 @@ module.exports = async (req, res) => {
   const { url: uploadedUrl } = await put(BLOB_KEY, JSON.stringify(allRecords), {
     access: "public",
     contentType: "application/json",
+    allowOverwrite: true,
   });
   blobUrl = uploadedUrl;
   lastModified = now;

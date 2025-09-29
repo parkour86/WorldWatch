@@ -34,6 +34,7 @@ module.exports = async (req, res) => {
     {
       access: "public",
       contentType: "application/json",
+      allowOverwrite: true,
     },
   );
   blobUrl = uploadedUrl;
