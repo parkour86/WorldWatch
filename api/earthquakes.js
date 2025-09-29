@@ -2,7 +2,7 @@ const { put } = require("@vercel/blob");
 const axios = require("axios");
 
 const BLOB_KEY = "API_Data/earthquakes.json";
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 20 * 60 * 1000; // 20 minutes
 
 let blobUrl = null;
 let lastModified = null;
