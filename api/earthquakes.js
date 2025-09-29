@@ -1,21 +1,20 @@
-const { put, get } = require("@vercel/blob");
+const { put } = require("@vercel/blob");
 const axios = require("axios");
 
 const BLOB_KEY = "earthquakes/data.json";
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+// Store the blob URL in memory (for demonstration; use a DB or env for persistence)
+let blobUrl = null;
+let lastModified = null;
+
 module.exports = async (req, res) => {
-  let cached = await get(BLOB_KEY);
-  let data, lastModified;
-
-  if (cached) {
-    data = JSON.parse(await cached.text());
-    lastModified = new Date(cached.lastModified).getTime();
-  }
-
   const now = Date.now();
-  if (data && lastModified && now - lastModified < CACHE_TTL) {
-    return res.json(data);
+
+  // Try to read from blob if URL and lastModified are set and cache is fresh
+  if (blobUrl && lastModified && now - lastModified < CACHE_TTL) {
+    const response = await axios.get(blobUrl);
+    return res.json(response.data);
   }
 
   // Fetch and cache new data
@@ -28,9 +27,17 @@ module.exports = async (req, res) => {
     mag: f.properties.mag,
   }));
 
-  await put(BLOB_KEY, JSON.stringify(earthquakes), {
-    access: "private",
-    contentType: "application/json",
-  });
+  // Upload to Vercel Blob and save the URL and timestamp
+  const { url: uploadedUrl } = await put(
+    BLOB_KEY,
+    JSON.stringify(earthquakes),
+    {
+      access: "private",
+      contentType: "application/json",
+    },
+  );
+  blobUrl = uploadedUrl;
+  lastModified = now;
+
   return res.json(earthquakes);
 };
