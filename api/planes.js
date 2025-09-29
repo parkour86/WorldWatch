@@ -14,6 +14,7 @@ module.exports = async (req, res) => {
   if (blobUrl && lastModified && now - lastModified < CACHE_TTL) {
     try {
       const response = await axios.get(blobUrl);
+      console.log("Serving plane cached data");
       return res.json(response.data);
     } catch (err) {
       // If blob fetch fails, continue to try API
@@ -44,6 +45,7 @@ module.exports = async (req, res) => {
     });
     blobUrl = uploadedUrl;
     lastModified = now;
+    console.log("Planes fetched from API");
 
     return res.json(planes);
   } catch (err) {
@@ -51,6 +53,7 @@ module.exports = async (req, res) => {
     if (blobUrl) {
       try {
         const response = await axios.get(blobUrl);
+        console.log("Serving plane cached data");
         return res.json(response.data);
       } catch (blobErr) {
         // Blob fetch also failed
